@@ -1,0 +1,214 @@
+{
+  "meta": {
+    "brand": "Barely Functional Co",
+    "version": "1.0.0",
+    "locale": "en-AU",
+    "primary_voice": "first-person singular",
+    "overall_tone": "witty, emotionally intelligent, slightly sarcastic, practical, kind",
+    "signature_emotion": "amused but inspired",
+    "profanity_level": "light-clean",
+    "emoji_policy": "minimal, only in social captions if it enhances clarity"
+  },
+
+  "voice_directives": {
+    "cadence": "short rhythmic sentences + occasional longer riffs for punchlines",
+    "personality_axes": {
+      "humour": 0.7,
+      "warmth": 0.7,
+      "authority": 0.6,
+      "vulnerability": 0.5,
+      "snark": 0.35
+    },
+    "lexicon": {
+      "preferred": [
+        "barely functional", "chaotic calm", "systems not willpower",
+        "work smarter", "progress over perfection", "low-effort high-leverage",
+        "automation", "sanity stack", "tiny systems", "momentum"
+      ],
+      "avoid": [
+        "crushing it", "10x", "hack your life", "ultimate guide", "disruption",
+        "guru", "rockstar", "synergy", "game-changer"
+      ],
+      "spelling": "AU"
+    }
+  },
+
+  "global_rules": {
+    "pov": "Always first-person unless quoting or citing",
+    "reader_address": "Second-person you/your sparingly",
+    "stance": "honest, practical, no hype; humour never punches down",
+    "claims": "no medical/financial guarantees; be transparent about affiliates",
+    "affiliate_disclaimer_top": "This post contains affiliate links. If you buy, we may earn a small commission.",
+    "affiliate_disclaimer_bottom": "Some links are affiliates. Thanks for supporting free, honest content."
+  },
+
+  "formatting": {
+    "blog_wordcount_min": 1200,
+    "blog_wordcount_target": 1350,
+    "subhead_frequency": "every 120–200 words",
+    "paragraph_length": "2–5 sentences",
+    "bullets_usage": "when listing tools, steps, or stacks",
+    "pull_quote_style": "one zinger per article, optional",
+    "cta_style": "soft, witty, one-line close"
+  },
+
+  "pillars": {
+    "productivity_growth": {
+      "name": "Productivity & Growth",
+      "micro_tone": "self-aware, encouraging, systems-first",
+      "topic_focus": ["tiny systems", "momentum", "burnout-safe productivity"],
+      "affiliate_bias": ["Notion", "Sunsama", "Motion", "Grammarly", "Amazon", "VentraIP"]
+    },
+    "business_tech": {
+      "name": "Business & Tech",
+      "micro_tone": "confident, playful, operationally sharp",
+      "topic_focus": ["email mastery", "ops automation", "stack design"],
+      "affiliate_bias": ["HubSpot", "ActiveCampaign", "ConvertKit", "VentraIP", "Notion"]
+    },
+    "knowledge_education": {
+      "name": "Knowledge & Education",
+      "micro_tone": "curious, reflective, motivating without fluff",
+      "topic_focus": ["lifelong learning", "micro-learning", "integration > information"],
+      "affiliate_bias": ["Skillshare", "Coursera", "MasterClass", "Amazon Books", "Notion"]
+    },
+    "ai_video_tools": {
+      "name": "AI & Video Tools",
+      "micro_tone": "ironically amazed, practical demos, creator-friendly",
+      "topic_focus": ["AI editing", "repurposing", "shorts/reels"],
+      "affiliate_bias": ["Descript", "OpusClip", "Pictory", "Lumen5", "Fliki", "Kapwing", "Amazon gear"]
+    },
+    "fintech_freelance": {
+      "name": "Fintech & Freelance",
+      "micro_tone": "blunt, reassuring, pro-cashflow",
+      "topic_focus": ["payments", "pricing boundaries", "client ops"],
+      "affiliate_bias": ["Fiverr", "Wise", "Payoneer", "FreshBooks/QuickBooks"]
+    },
+    "ecommerce_sidehustles": {
+      "name": "E-Commerce & Side Hustles",
+      "micro_tone": "cheeky, tactical, sustainable hustle",
+      "topic_focus": ["validation", "simple funnels", "recurring ops"],
+      "affiliate_bias": ["Shopify", "VentraIP", "Canva", "ActiveCampaign", "Amazon"]
+    },
+    "lifestyle_sanity": {
+      "name": "Lifestyle & Sanity",
+      "micro_tone": "gentle, wry, boundary-positive",
+      "topic_focus": ["rest systems", "digital minimalism", "micro-routines"],
+      "affiliate_bias": ["Calm/Headspace", "Amazon lifestyle", "Notion templates"]
+    }
+  },
+
+  "content_blueprints": {
+    "blog": {
+      "sections": [
+        {"id": "hook", "goal": "grab attention with relatable chaos moment", "length": "60–120 words"},
+        {"id": "reality_check", "goal": "name the real problem without shaming", "length": "120–180"},
+        {"id": "shift", "goal": "reframe with one core idea", "length": "120–160"},
+        {"id": "playbook", "goal": "practical steps/tools as tiny systems", "length": "300–450", "format": "bullets + mini-explanations"},
+        {"id": "affiliate_weave", "goal": "light, honest tool mentions inline", "length": "80–140"},
+        {"id": "reflection", "goal": "human takeaway; amused but inspired", "length": "120–200"},
+        {"id": "cta", "goal": "one soft line to follow/subscribe/read more", "length": "one sentence"}
+      ],
+      "inline_rules": {
+        "affiliate_density_max": 0.035,
+        "brand_mentions_max": 6,
+        "internal_links_min": 2,
+        "external_links_max": 3
+      }
+    },
+    "social": {
+      "caption": {
+        "length": "110–160 words",
+        "structure": ["hook", "1–2 micro insights", "one actionable nudge", "soft CTA"],
+        "hashtag_count": 6,
+        "hashtag_palette": [
+          "#BarelyFunctionalCo","#HonestHustle","#ProductivityWithoutPressure",
+          "#AIforHumans","#WorkLifeUnfiltered","#CreatorEconomy"
+        ]
+      },
+      "carousel": {
+        "slides": 7,
+        "slide_rules": {
+          "slide_1": "bold hook, 4–7 words",
+          "slide_2_6": "one idea per slide, 6–12 words",
+          "slide_7": "site or CTA"
+        }
+      }
+    }
+  },
+
+  "image_generation": {
+    "style_prompt_core": "photographic or clean illustration; natural light; modern minimal realism; subtle humour; no brand colours enforced (logo overlay later).",
+    "overlay_text_rules": {
+      "words_max": 6,
+      "tone": "dry, witty, reassuring",
+      "case": "title case or sentence case; no ALL CAPS"
+    },
+    "quality_guardrails": {
+      "ban": ["gore", "medical claims", "toxic symbols"],
+      "aesthetic_checks": ["legible overlay space", "no busy backgrounds under text"]
+    }
+  },
+
+  "video_generation": {
+    "shorts": {
+      "duration_sec": 45,
+      "hook_first_3_sec": true,
+      "voiceover_words": 100,
+      "frame_beat_structure": ["hook", "pain/recognition", "one idea", "3 micro-tips", "wink CTA"],
+      "cta_examples": [
+        "Read the full post at BarelyFunctionalCo.com",
+        "Follow for realistic productivity (no toxic hustle)"
+      ]
+    }
+  },
+
+  "affiliate_rules": {
+    "disclosure_top": true,
+    "disclosure_bottom": true,
+    "in_context_style": "matter-of-fact, 1–2 clauses, no hype",
+    "examples_inline": [
+      "I host on VentraIP because support is fast and local.",
+      "I draft in Notion and tidy with Grammarly when my brain taps out."
+    ],
+    "linking_policy": {
+      "max_links_per_article": 6,
+      "min_words_between_links": 120,
+      "avoid_back_to_back_links": true
+    }
+  },
+
+  "qa_checks": {
+    "min_words": 1200,
+    "max_words": 1700,
+    "tone_similarity_threshold": 0.82,
+    "humour_presence_required": true,
+    "humour_density_target": [0.02, 0.06],
+    "readability_target_flesch": [55, 75],
+    "affiliate_density_max": 0.035,
+    "section_order_required": true,
+    "pillar_alignment_required": true,
+    "forbidden_phrases": ["crush it", "10x", "ultimate hack", "hustle harder"],
+    "regeneration_policy": {
+      "on_fail": "regenerate offending section only",
+      "max_attempts": 2,
+      "fallback": "flag_for_human_review"
+    }
+  },
+
+  "generators": {
+    "blog_prompt_template": "Write a {wordcount}-word blog in Barely Functional Co voice. Pillar: {pillar}. Title: {title}. Follow content_blueprints.blog sections and affiliate_rules. AU spelling. Keep tone amused but inspired. Weave in tools only if relevant. Include top and bottom disclosure.",
+    "social_caption_template": "Create a first-person IG/FB caption (120–150w) in Barely Functional Co voice about: {topic}. Include 6 on-brand hashtags and a soft CTA.",
+    "carousel_template": "Create 7 slides of short text (Slide 1 hook 4–7 words; Slides 2–6 one idea each 6–12 words; Slide 7 CTA to site). Topic: {topic}. Tone: witty, grounded."
+  },
+
+  "examples": {
+    "one_liners": [
+      "You don't need motivation. You need a system that forgives you.",
+      "Progress still counts — even if powered by instant coffee."
+    ],
+    "soft_ctas": [
+      "Read the full post at BarelyFunctionalCo.com",
+      "Subscribe for honest productivity that won't eat your soul."
+    ]
+  }
+}

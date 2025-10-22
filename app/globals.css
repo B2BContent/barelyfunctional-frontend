@@ -1,0 +1,30 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root { color-scheme: light; }
+
+body {
+  @apply bg-white text-bf-text antialiased;
+}
+
+.container-bf { @apply max-w-6xl mx-auto px-4 sm:px-6 lg:px-8; }
+
+.card {
+  @apply bg-white border border-black/5 rounded-2xl shadow-soft;
+}
+.card-soft {
+  @apply bg-bf-card border border-black/5 rounded-2xl shadow-soft;
+}
+
+.btn {
+  @apply inline-flex items-center gap-2 px-4 py-2 rounded-xl font-medium transition;
+}
+.btn-primary {
+  @apply bg-bf-teal text-white hover:opacity-90;
+}
+.btn-ghost {
+  @apply border border-black/10 hover:bg-black/5;
+}
+
+.prose-bf { @apply prose prose-zinc max-w-none; }

@@ -1,0 +1,44 @@
+{
+  "name": "barely-functional",
+  "private": true,
+  "version": "0.1.0",
+  "scripts": {
+    "dev": "next dev -p 5000 -H 0.0.0.0",
+    "build": "next build",
+    "start": "next start -p 5000 -H 0.0.0.0",
+    "cms": "sanity dev --cwd ./studio",
+    "test:tone": "node scripts/test_tone_engine.js",
+    "publish:demo": "node scripts/publish.js",
+    "publish:dir": "node scripts/publishFromFile.js out/posts out/published",
+    "gen:daily": "node scripts/generateDaily.js",
+    "cron:run": "npm run gen:daily && npm run publish:dir",
+    "social:preview": "node -e \"const fs = require('fs'); const dirs = fs.readdirSync('out/social'); console.log('Social content for', dirs.length, 'posts'); dirs.slice(0,3).forEach(d => console.log('  -', d));\""
+  },
+  "dependencies": {
+    "@portabletext/react": "^4.0.3",
+    "@sanity/client": "^6.18.2",
+    "@sanity/image-url": "^1.2.0",
+    "csv-parse": "^6.1.0",
+    "dayjs": "^1.11.18",
+    "fast-glob": "^3.3.3",
+    "mime-types": "^3.0.1",
+    "next": "14.2.5",
+    "next-sanity": "8.5.5",
+    "node-fetch": "^3.3.2",
+    "react": "18.3.1",
+    "react-dom": "18.3.1",
+    "sanity": "3.61.0",
+    "zustand": "4.5.2"
+  },
+  "devDependencies": {
+    "@tailwindcss/typography": "^0.5.19",
+    "@types/node": "20.12.12",
+    "@types/react": "18.3.5",
+    "autoprefixer": "^10.4.21",
+    "eslint": "8.57.0",
+    "eslint-config-next": "14.2.5",
+    "postcss": "^8.5.6",
+    "tailwindcss": "^3.4.0",
+    "typescript": "5.6.3"
+  }
+}
