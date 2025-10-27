@@ -1,4 +1,7 @@
 {
+  "rewrites": [
+    { "source": "/", "destination": "/posts" }
+  ],
   "redirects": [
     { "source": "/", "destination": "/posts", "permanent": true }
   ]
