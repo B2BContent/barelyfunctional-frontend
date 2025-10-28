@@ -1,3 +1,4 @@
+export const revalidate = 60;
 import { client } from '../../../lib/sanity.client'
 import { PortableText } from '@portabletext/react'
 import Link from 'next/link'
@@ -11,7 +12,6 @@ type Post = {
   affiliateLink?: string
 }
 
-export const revalidate = 60
 
 async function getPost(slug: string): Promise<Post | null> {
   return client.fetch(

@@ -1,3 +1,4 @@
+export const revalidate = 60;
 import Link from 'next/link'
 import Image from 'next/image'
 import { client } from '../../lib/sanity.client'
@@ -18,7 +19,6 @@ function getImageUrl(heroImage: any): string | null {
   return null;
 }
 
-export const revalidate = 60
 
 export default async function PostsIndex() {
   const posts: PostListItem[] = await client.fetch(
