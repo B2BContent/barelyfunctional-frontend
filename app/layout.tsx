@@ -2,6 +2,7 @@ import "./globals.css";
 import Link from "next/link";
 import type { Metadata } from "next";
 import React from "react";
+import AffiliateDisclosure from "@/components/AffiliateDisclosure";
 
 export const metadata: Metadata = {
   title: {
@@ -34,10 +35,13 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           {children}
         </main>
 
+        {/* AFFILIATE DISCLOSURE STRIP (site-wide) */}
+        <AffiliateDisclosure />
+
         {/* FOOTER */}
         <footer className="border-t border-gray-200 bg-white py-6 text-center text-sm text-gray-500">
           <p>
-            © {new Date().getFullYear()} Barely Functional Co. — 
+            © {new Date().getFullYear()} Barely Functional Co. —
             <span className="italic"> for managers, misfits, and the quietly competent.</span>
           </p>
         </footer>
