@@ -1,13 +1,27 @@
 import Link from "next/link";
-import { client } from "@/sanity/lib/client";
+import { client } from "@/lib/sanity.client";
 
-async function getLatestPosts() {
-  const query = `*[_type == "post"] | order(_createdAt desc)[0...3]{
-    _id,
-    title,
-    slug,
-    _createdAt
-  }`;
+export const revalidate = 60;
+
+type PostLite = {
+  _id: string;
+  title: string;
+  slug: { current: string };
+  _createdAt: string;
+  snippet?: string;
+};
+
+async function getLatestPosts(): Promise<PostLite[]> {
+  const query = /* groq */ `
+    *[_type == "post" && status == "approved"] | order(publishedAt desc)[0...3]{
+      _id,
+      title,
+      slug,
+      coalesce(publishedAt, _createdAt) as _createdAt,
+      // Prefer excerpt; else plain text of body; else hook; then slice to ~180 chars
+      "snippet": string::slice(coalesce(excerpt, pt::text(body), hook, ""), 0, 180)
+    }
+  `;
   return await client.fetch(query);
 }
 
@@ -16,6 +30,7 @@ export default async function HomePage() {
 
   return (
     <section className="max-w-4xl mx-auto text-center py-24">
+      {/* HERO */}
       <h1 className="text-5xl font-bold text-gray-900 mb-6">
         The Barely Functional Handbook
       </h1>
@@ -42,23 +57,32 @@ export default async function HomePage() {
         <p>Because holding it together shouldn’t require a medal.</p>
       </div>
 
-      {/* Latest Posts Section */}
+      {/* LATEST POSTS */}
       <div className="mt-28 text-left">
         <h2 className="text-2xl font-semibold text-gray-900 mb-8 text-center">
           Latest Posts
         </h2>
+
         <div className="grid gap-8 md:grid-cols-3">
-          {posts.length > 0 ? (
+          {posts && posts.length > 0 ? (
             posts.map((post) => (
               <Link
                 key={post._id}
                 href={`/posts/${post.slug.current}`}
-                className="block border border-gray-200 rounded-lg p-6 hover:shadow-md transition"
+                className="block border border-gray-200 rounded-lg p-6 hover:shadow-md transition bg-white"
               >
                 <h3 className="font-semibold text-lg mb-2 text-gray-900 line-clamp-2">
                   {post.title}
                 </h3>
-                <p className="text-sm text-gray-500">
+                {post.snippet ? (
+                  <p className="text-sm text-gray-600 line-clamp-3">
+                    {post.snippet}
+                    {post.snippet.length >= 175 ? "…" : ""}
+                  </p>
+                ) : (
+                  <p className="text-sm text-gray-500">Read more →</p>
+                )}
+                <p className="mt-3 text-xs text-gray-500">
                   {new Date(post._createdAt).toLocaleDateString("en-AU", {
                     year: "numeric",
                     month: "short",
