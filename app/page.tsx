@@ -1,4 +1,3 @@
-// app/page.tsx
 import Container from "@/components/ui/Container";
 import Link from "next/link";
 import Image from "next/image";
