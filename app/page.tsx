@@ -7,20 +7,20 @@ type PostLite = {
   _id: string;
   title: string;
   slug: { current: string };
-  _createdAt: string;
+  createdAt: string;
   snippet?: string;
 };
 
 async function getLatestPosts(): Promise<PostLite[]> {
   const query = /* groq */ `
-    *[_type == "post" && status == "approved"] | order(publishedAt desc)[0...3]{
-      _id,
-      title,
-      slug,
-      coalesce(publishedAt, _createdAt) as _createdAt,
-      // Prefer excerpt; else plain text of body; else hook; then slice to ~180 chars
-      "snippet": string::slice(coalesce(excerpt, pt::text(body), hook, ""), 0, 180)
-    }
+    *[_type == "post" && status == "approved"]
+      | order(coalesce(publishedAt, _createdAt) desc)[0...3]{
+        _id,
+        title,
+        slug,
+        "createdAt": coalesce(publishedAt, _createdAt),
+        "snippet": string::substr(coalesce(excerpt, pt::text(body), hook, ""), 0, 180)
+      }
   `;
   return await client.fetch(query);
 }
@@ -76,14 +76,13 @@ export default async function HomePage() {
                 </h3>
                 {post.snippet ? (
                   <p className="text-sm text-gray-600 line-clamp-3">
-                    {post.snippet}
-                    {post.snippet.length >= 175 ? "…" : ""}
+                    {post.snippet}{post.snippet.length >= 175 ? "…" : ""}
                   </p>
                 ) : (
                   <p className="text-sm text-gray-500">Read more →</p>
                 )}
                 <p className="mt-3 text-xs text-gray-500">
-                  {new Date(post._createdAt).toLocaleDateString("en-AU", {
+                  {new Date(post.createdAt).toLocaleDateString("en-AU", {
                     year: "numeric",
                     month: "short",
                     day: "numeric",
