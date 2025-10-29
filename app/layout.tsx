@@ -1,12 +1,17 @@
 import "./globals.css";
 import Link from "next/link";
+import type { Metadata } from "next";
+import React from "react";
 
-export const metadata = {
-  title: "Barely Functional Co.",
+export const metadata: Metadata = {
+  title: {
+    default: "Barely Functional Co.",
+    template: "%s — Barely Functional Co.",
+  },
   description: "For managers, misfits, and the quietly competent.",
 };
 
-export default function RootLayout({ children }) {
+export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en">
       <body className="min-h-screen flex flex-col bg-[#faf9f6] text-gray-800">
