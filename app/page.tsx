@@ -3,12 +3,22 @@ import { client } from "@/lib/sanity.client";
 
 export const revalidate = 60;
 
+type RawPost = {
+  _id: string;
+  title: string;
+  slug: { current: string };
+  createdAt: string;
+  excerpt?: string;
+  bodyText?: string;
+  hook?: string;
+};
+
 type PostLite = {
   _id: string;
   title: string;
   slug: { current: string };
   createdAt: string;
-  snippet?: string;
+  snippet: string;
 };
 
 async function getLatestPosts(): Promise<PostLite[]> {
@@ -19,10 +29,23 @@ async function getLatestPosts(): Promise<PostLite[]> {
         title,
         slug,
         "createdAt": coalesce(publishedAt, _createdAt),
-        "snippet": string::substr(coalesce(excerpt, pt::text(body), hook, ""), 0, 180)
+        excerpt,
+        "bodyText": select(defined(body) => pt::text(body), ""),
+        hook
       }
   `;
-  return await client.fetch(query);
+  const rows = await client.fetch<RawPost[]>(query);
+  return rows.map((p) => {
+    const base = (p.excerpt || p.bodyText || p.hook || "").trim();
+    const snippet = base.length > 180 ? base.slice(0, 177) + "…" : base;
+    return {
+      _id: p._id,
+      title: p.title,
+      slug: p.slug,
+      createdAt: p.createdAt,
+      snippet,
+    };
+  });
 }
 
 export default async function HomePage() {
@@ -75,9 +98,7 @@ export default async function HomePage() {
                   {post.title}
                 </h3>
                 {post.snippet ? (
-                  <p className="text-sm text-gray-600 line-clamp-3">
-                    {post.snippet}{post.snippet.length >= 175 ? "…" : ""}
-                  </p>
+                  <p className="text-sm text-gray-600 line-clamp-3">{post.snippet}</p>
                 ) : (
                   <p className="text-sm text-gray-500">Read more →</p>
                 )}
