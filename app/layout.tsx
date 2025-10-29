@@ -1,43 +1,40 @@
-import './globals.css';
-import Image from 'next/image';
+import "./globals.css";
+import Link from "next/link";
 
 export const metadata = {
-  title: "Barely Functional",
-  description: "A five-pillar publishing machine with a satirical soul.",
+  title: "Barely Functional Co.",
+  description: "For managers, misfits, and the quietly competent.",
 };
 
-export default function RootLayout({ children }: { children: React.ReactNode }) {
+export default function RootLayout({ children }) {
   return (
     <html lang="en">
-      <body>
-        <header className="border-b border-black/5">
-          <nav className="container-bf h-16 flex items-center justify-between">
-            <a href="/" className="flex items-center gap-3">
-              <Image 
-                src="/barely-functional-logo.png" 
-                alt="Barely Functional" 
-                width={32}
-                height={32}
-                className="h-8 w-8 rounded-md object-cover"
-              />
-              <span className="font-semibold tracking-tight">
-                Barely <span className="text-bf-teal">Functional</span>
-              </span>
-            </a>
-            <div className="flex items-center gap-6 text-sm text-bf-sub">
-              <a href="/posts" className="hover:text-bf-teal">Posts</a>
-              <a href="/pillars/productivity" className="hover:text-bf-teal">Pillars</a>
-              <a href="/contact" className="hover:text-bf-teal">Contact</a>
+      <body className="min-h-screen flex flex-col bg-[#faf9f6] text-gray-800">
+        {/* HEADER */}
+        <header className="w-full border-b border-gray-200 bg-white sticky top-0 z-50">
+          <nav className="mx-auto max-w-5xl flex items-center justify-between px-4 py-3">
+            <Link href="/" className="text-xl font-semibold text-gray-900">
+              Barely Functional Co.
+            </Link>
+            <div className="flex gap-6 text-sm font-medium">
+              <Link href="/" className="hover:text-blue-600 transition">Home</Link>
+              <Link href="/about" className="hover:text-blue-600 transition">About</Link>
+              <Link href="/posts" className="hover:text-blue-600 transition">Posts</Link>
             </div>
           </nav>
         </header>
 
-        <main className="container-bf py-10">{children}</main>
+        {/* MAIN CONTENT */}
+        <main className="flex-1 w-full max-w-5xl mx-auto px-4 py-12">
+          {children}
+        </main>
 
-        <footer className="mt-16 border-t border-black/5">
-          <div className="container-bf py-8 text-sm text-bf-sub">
-            © {new Date().getFullYear()} Barely Functional — for managers, misfits, and the quietly competent.
-          </div>
+        {/* FOOTER */}
+        <footer className="border-t border-gray-200 bg-white py-6 text-center text-sm text-gray-500">
+          <p>
+            © {new Date().getFullYear()} Barely Functional Co. — 
+            <span className="italic"> for managers, misfits, and the quietly competent.</span>
+          </p>
         </footer>
       </body>
     </html>
