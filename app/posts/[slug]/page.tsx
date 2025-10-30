@@ -77,7 +77,7 @@ function firstNonEmpty(...vals: (string | undefined)[]): string {
 
 export async function generateMetadata({ params }: { params: { slug: string } }): Promise<Metadata> {
   const post = await client.fetch<PostDoc>(POST_QUERY, { slug: params.slug });
-  const imageUrl = post?.raw?.mainImage?.asset?.url ?? post?.mainImage?.asset?.url ?? "/og-default.png";
+  const imageUrl = post?.raw?.mainImage?.asset?.url ?? post?.mainImage?.asset?.url ?? "/og-default.svg";
 
   const hook = pickText(post?.raw || {}, ["hook", "intro", "opening"]);
   const excerpt = typeof post?.raw?.excerpt === "string" ? post?.raw?.excerpt : post?.excerpt;
@@ -119,7 +119,7 @@ export default async function PostPage({ params }: { params: { slug: string } })
   }
 
   const raw = post.raw || {};
-  const imageUrl = raw?.mainImage?.asset?.url ?? post.mainImage?.asset?.url ?? "/og-default.png";
+  const imageUrl = raw?.mainImage?.asset?.url ?? post.mainImage?.asset?.url ?? "/og-default.svg";
 
   // Try all common keys for each section
   const sections: { title: string; text?: string }[] = [
