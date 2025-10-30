@@ -3,23 +3,16 @@ import { client } from "@/lib/sanity.client";
 import type { Metadata } from "next";
 import Link from "next/link";
 
+type AnyRecord = Record<string, any>;
+
 type PostDoc = {
   title: string;
   slug: { current: string };
   publishedAt?: string;
   excerpt?: string;
   mainImage?: { asset?: { url?: string } };
-  // Section-based content (from your generator)
-  hook?: string;
-  reality_check?: string;
-  shift?: string;
-  playbook?: string;
-  affiliate_weave?: string;
-  reflection?: string;
-  cta?: string;
-  // Optional old-style fields
-  body?: any;
-  bodyText?: string;
+  // we also pull the whole raw doc to detect sections wherever they live
+  raw: AnyRecord;
 };
 
 const POST_QUERY = `
@@ -29,40 +22,76 @@ const POST_QUERY = `
   publishedAt,
   excerpt,
   mainImage{ asset->{ url } },
-  // Section fields from your generator:
-  hook,
-  reality_check,
-  shift,
-  playbook,
-  affiliate_weave,
-  reflection,
-  cta,
-  // Optional old-style body fallback:
-  body,
-  "bodyText": select(defined(body) => pt::text(body), "")
+  "raw": @
 }
 `;
 
+function pickText(raw: AnyRecord, candidates: string[]): string | undefined {
+  // try direct keys, then nested under known containers
+  const containers = ["", "sections", "section", "content", "data"];
+  for (const base of containers) {
+    for (const key of candidates) {
+      const value =
+        base === "" ? raw?.[key] : raw?.[base]?.[key];
+
+      if (value == null) continue;
+
+      if (typeof value === "string") {
+        const t = value.trim();
+        if (t) return t;
+      }
+      if (Array.isArray(value)) {
+        // Join arrays of strings/blocks safely into lines
+        const parts = value
+          .map((v) => {
+            if (typeof v === "string") return v.trim();
+            if (v && typeof v === "object" && "children" in v) {
+              // portable text block fallback: join child text
+              // @ts-ignore
+              return (v.children || [])
+                .map((c: any) => (typeof c?.text === "string" ? c.text : ""))
+                .join("");
+            }
+            return "";
+          })
+          .filter(Boolean);
+        const joined = parts.join("\n\n").trim();
+        if (joined) return joined;
+      }
+      if (value && typeof value === "object") {
+        // sometimes a section might be {text: "..."} or similar
+        const maybe =
+          (typeof value.text === "string" && value.text.trim()) ||
+          (typeof value.content === "string" && value.content.trim());
+        if (maybe) return maybe;
+      }
+    }
+  }
+  return undefined;
+}
+
+function firstNonEmpty(...vals: (string | undefined)[]): string {
+  for (const v of vals) if (v && v.trim()) return v;
+  return "";
+}
+
 export async function generateMetadata({ params }: { params: { slug: string } }): Promise<Metadata> {
   const post = await client.fetch<PostDoc>(POST_QUERY, { slug: params.slug });
-  const imageUrl = post?.mainImage?.asset?.url ?? "/og-default.png";
+  const imageUrl = post?.raw?.mainImage?.asset?.url ?? post?.mainImage?.asset?.url ?? "/og-default.png";
 
-  // Build a short description from excerpt or first available section
-  const firstText =
-    post?.excerpt ||
-    post?.hook ||
-    post?.reality_check ||
-    post?.shift ||
-    post?.bodyText ||
-    "";
-  const desc = firstText ? (firstText.length > 160 ? firstText.slice(0, 157) + "…" : firstText) : "";
+  const hook = pickText(post?.raw || {}, ["hook", "intro", "opening"]);
+  const excerpt = typeof post?.raw?.excerpt === "string" ? post?.raw?.excerpt : post?.excerpt;
+  const bodyText = pickText(post?.raw || {}, ["bodyText", "body"]); // very loose fallback
+
+  const descSrc = firstNonEmpty(excerpt, hook, bodyText);
+  const description = descSrc.length > 160 ? descSrc.slice(0, 157) + "…" : descSrc;
 
   return {
     title: post?.title || "Post",
-    description: desc,
+    description,
     openGraph: {
       title: post?.title || "Post",
-      description: desc,
+      description,
       url: `/posts/${params.slug}`,
       images: [{ url: imageUrl, width: 1200, height: 630, alt: post?.title || "Post image" }],
       type: "article",
@@ -70,7 +99,7 @@ export async function generateMetadata({ params }: { params: { slug: string } })
     twitter: {
       card: "summary_large_image",
       title: post?.title || "Post",
-      description: desc,
+      description,
       images: [imageUrl],
     },
   };
@@ -89,25 +118,25 @@ export default async function PostPage({ params }: { params: { slug: string } })
     );
   }
 
-  const imageUrl = post.mainImage?.asset?.url ?? "/og-default.png";
+  const raw = post.raw || {};
+  const imageUrl = raw?.mainImage?.asset?.url ?? post.mainImage?.asset?.url ?? "/og-default.png";
 
-  // Build a safe, sectioned content array (falls back to bodyText if sections missing)
-  const sections: { key: string; title: string; text?: string }[] = [
-    { key: "hook", title: "Hook", text: post.hook },
-    { key: "reality_check", title: "Reality Check", text: post.reality_check },
-    { key: "shift", title: "Shift", text: post.shift },
-    { key: "playbook", title: "Playbook", text: post.playbook },
-    { key: "affiliate_weave", title: "Tools Mentioned", text: post.affiliate_weave },
-    { key: "reflection", title: "Reflection", text: post.reflection },
-    { key: "cta", title: "Next Step", text: post.cta },
+  // Try all common keys for each section
+  const sections: { title: string; text?: string }[] = [
+    { title: "Hook",            text: pickText(raw, ["hook", "intro", "opening"]) },
+    { title: "Reality Check",   text: pickText(raw, ["reality_check", "realityCheck", "problem", "pain"]) },
+    { title: "Shift",           text: pickText(raw, ["shift", "reframe", "idea"]) },
+    { title: "Playbook",        text: pickText(raw, ["playbook", "steps", "guide", "howto", "bullets"]) },
+    { title: "Tools Mentioned", text: pickText(raw, ["affiliate_weave", "tools", "mentions"]) },
+    { title: "Reflection",      text: pickText(raw, ["reflection", "takeaway", "closing"]) },
+    { title: "Next Step",       text: pickText(raw, ["cta", "call_to_action", "action"]) },
   ].filter(s => s.text && s.text.trim().length > 0);
 
-  const hasSectionContent = sections.length > 0;
-  const fallbackText = !hasSectionContent ? (post.bodyText || "") : "";
+  const fallback = pickText(raw, ["bodyText", "body", "content"]);
 
   return (
     <article className="max-w-4xl mx-auto space-y-8">
-      {/* JSON-LD for BlogPosting (safe) */}
+      {/* JSON-LD */}
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{
@@ -140,11 +169,10 @@ export default async function PostPage({ params }: { params: { slug: string } })
         <img src={imageUrl} alt={post.title} className="object-cover w-full h-full" />
       </div>
 
-      {/* Render section-based content (safe, no rich-text renderer) */}
-      {hasSectionContent ? (
+      {sections.length > 0 ? (
         <div className="space-y-8">
-          {sections.map(s => (
-            <section key={s.key} className="space-y-3">
+          {sections.map((s, i) => (
+            <section key={i} className="space-y-3">
               <h2 className="text-xl font-semibold">{s.title}</h2>
               <div className="prose max-w-none text-gray-800 whitespace-pre-wrap leading-relaxed">
                 {s.text}
@@ -153,9 +181,8 @@ export default async function PostPage({ params }: { params: { slug: string } })
           ))}
         </div>
       ) : (
-        // Fallback to plain bodyText if sections aren’t available
         <div className="prose max-w-none text-gray-800 whitespace-pre-wrap leading-relaxed">
-          {fallbackText || "No content available for this post yet."}
+          {fallback || "No content available for this post yet."}
         </div>
       )}
 
