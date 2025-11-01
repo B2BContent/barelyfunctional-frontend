@@ -1,0 +1,51 @@
+name: Daily Content Cron
+
+on:
+  schedule:
+    # 08:05 Australia/Melbourne (AEDT = UTC+11) ≈ 21:05 UTC previous day
+    - cron: "5 21 * * *"
+  workflow_dispatch:
+
+jobs:
+  run-daily:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out repo
+        uses: actions/checkout@v4
+
+      - name: Use Node 18
+        uses: actions/setup-node@v4
+        with:
+          node-version: "18"
+
+      - name: Install (legacy peer deps to avoid sanity conflicts)
+        run: npm ci --legacy-peer-deps
+
+      - name: Generate & publish 7 posts
+        run: npm run cron:run
+        env:
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          SANITY_PROJECT_ID: ${{ secrets.SANITY_PROJECT_ID }}
+          SANITY_DATASET: ${{ secrets.SANITY_DATASET }}
+          SANITY_WRITE_TOKEN: ${{ secrets.SANITY_WRITE_TOKEN }}
+          SANITY_API_READ_TOKEN: ${{ secrets.SANITY_API_READ_TOKEN }}
+          SITE_URL: ${{ secrets.SITE_URL }}
+
+      - name: Clean any AI/markdown artifacts in Sanity (idempotent)
+        run: node scripts/migrate_clean_pt_blocks.mjs --apply
+        env:
+          SANITY_PROJECT_ID: ${{ secrets.SANITY_PROJECT_ID }}
+          SANITY_DATASET: ${{ secrets.SANITY_DATASET }}
+          SANITY_WRITE_TOKEN: ${{ secrets.SANITY_WRITE_TOKEN }}
+          SANITY_API_VERSION: "2025-02-19"
+
+      - name: Revalidate all posts on site
+        run: node scripts/revalidate_all.mjs
+        env:
+          SANITY_PROJECT_ID: ${{ secrets.SANITY_PROJECT_ID }}
+          SANITY_DATASET: ${{ secrets.SANITY_DATASET }}
+          SANITY_READ_TOKEN: ${{ secrets.SANITY_API_READ_TOKEN }}
+          SANITY_API_VERSION: "2025-02-19"
+          REVALIDATE_URL: "https://barelyfunctionalco.com/api/revalidate"
+          REVALIDATE_SECRET: ${{ secrets.REVALIDATE_SECRET }}
