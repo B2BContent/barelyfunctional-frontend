@@ -6,196 +6,191 @@ import Link from "next/link";
 
 export const revalidate = 60;
 
-// ---- helpers ---------------------------------------------------------------
+type AnyRec = Record<string, any>;
+type PostDoc = {
+  title: string;
+  slug: { current: string };
+  publishedAt?: string;
+  mainImage?: { asset?: { url?: string } };
+  raw: AnyRec; // full doc
+};
 
+// ---- cleaning helpers ----
 function cleanText(input?: string): string {
   if (!input) return "";
   let s = input;
 
-  // Remove common prompt/section labels at start of a line
+  // strip section labels
   s = s.replace(/^(hook|reality\s*check|shift|playbook|reflection|cta|tools\s*mentioned)\s*:\s*/gim, "");
-
-  // Markdown headings like ### and ####
+  // strip markdown headings
   s = s.replace(/^\s*#{1,6}\s*/gm, "");
-
-  // Numbered list prefixes like "1. ", "2. "
+  // numbered list prefixes
   s = s.replace(/^\s*\d+\.\s+/gm, "");
-
-  // Bullet prefixes
+  // bullet prefixes
   s = s.replace(/^\s*[-*•]\s+/gm, "");
-
-  // Code fences
+  // code fences
   s = s.replace(/```[\s\S]*?```/g, "");
-
-  // Bold/italics/code markers
-  s = s.replace(/\*\*(.*?)\*\*/g, "$1");
-  s = s.replace(/\*(.*?)\*/g, "$1");
-  s = s.replace(/_(.*?)_/g, "$1");
-  s = s.replace(/`{1,3}([^`]+?)`{1,3}/g, "$1");
-
-  // Filler openers
+  // bold/italics/code markers
+  s = s.replace(/\*\*(.*?)\*\*/g, "$1").replace(/\*(.*?)\*/g, "$1").replace(/_(.*?)_/g, "$1").replace(/`{1,3}([^`]+?)`{1,3}/g, "$1");
+  // filler openers
   s = s.replace(/^\s*(sure thing!|let[’']s break it down:|here[’']s the deal:|the bottom line:)\s*/i, "");
-
-  // Tidy whitespace
-  s = s.replace(/[ \t]+$/gm, "");
-  s = s.replace(/\n{3,}/g, "\n\n");
+  // whitespace tidy
+  s = s.replace(/[ \t]+$/gm, "").replace(/\n{3,}/g, "\n\n");
   return s.trim();
 }
 
-function renderSection(label: string, value?: string) {
-  const cleaned = cleanText(value);
-  if (!cleaned) return null;
-  const paras = cleaned.split(/\n\s*\n/);
-  return (
-    <section className="space-y-4">
-      {paras.map((p, i) => (
-        <p key={`${label}-${i}`} className="leading-7">
-          {p}
-        </p>
-      ))}
-    </section>
-  );
-}
+function pickText(raw: AnyRec, keys: string[]): string | undefined {
+  // try at top-level and inside common containers
+  const containers = ["", "sections", "section", "content", "data"];
+  for (const base of containers) {
+    for (const k of keys) {
+      const v = base ? raw?.[base]?.[k] : raw?.[k];
+      if (v == null) continue;
 
-// ---- data ------------------------------------------------------------------
-
-type Post = {
-  _id: string;
-  title: string;
-  slug: string;
-  publishedAt?: string;
-  imageUrl?: string;
-  affiliateDisclosure?: string;
-
-  hook?: string;
-  reality?: string;      // unified alias for reality_check / realityCheck
-  shift?: string;
-  playbook?: string;
-  affiliate?: string;    // unified alias for affiliate_weave / affiliateWeave
-  reflection?: string;
-  excerpt?: string;
-};
-
-async function getPost(slug: string): Promise<Post | null> {
-  // Use GROQ aliases + coalesce to unify snake_case, camelCase, and nested variants
-  const query = `
-    *[_type=="post" && slug.current==$slug][0]{
-      _id,
-      title,
-      "slug": slug.current,
-      publishedAt,
-
-      // hero image (any common key)
-      "imageUrl": coalesce(mainImage.asset->url, main_image.asset->url),
-
-      affiliateDisclosure,
-
-      // unified sections
-      "hook": coalesce(hook, sections.hook, content.hook, data.hook, intro, opening),
-      "reality": coalesce(reality_check, realityCheck, sections.reality_check, sections.realityCheck, content.reality_check, content.realityCheck, problem, pain),
-      "shift": coalesce(shift, sections.shift, content.shift, idea, reframe),
-
-      "playbook": coalesce(playbook, sections.playbook, content.playbook, steps, guide, howto, bullets),
-
-      "affiliate": coalesce(affiliate_weave, affiliateWeave, sections.affiliate_weave, sections.affiliateWeave, tools, mentions),
-
-      "reflection": coalesce(reflection, sections.reflection, content.reflection, takeaway, closing),
-
-      "excerpt": coalesce(excerpt, summary)
+      if (typeof v === "string") {
+        const t = v.trim();
+        if (t) return t;
+      }
+      if (Array.isArray(v)) {
+        // join arrays of strings/PT blocks
+        const parts = v.map((item) => {
+          if (typeof item === "string") return item.trim();
+          if (item && typeof item === "object" && item._type === "block" && Array.isArray(item.children)) {
+            return item.children.map((c: any) => (typeof c?.text === "string" ? c.text : "")).join("");
+          }
+          return "";
+        }).filter(Boolean);
+        const joined = parts.join("\n\n").trim();
+        if (joined) return joined;
+      }
+      if (v && typeof v === "object") {
+        const maybe = (typeof v.text === "string" && v.text.trim()) || (typeof v.content === "string" && v.content.trim());
+        if (maybe) return maybe;
+      }
     }
-  `;
-  return client.fetch(query, { slug });
+  }
+  return undefined;
 }
+
+function firstNonEmpty(...vals: (string | undefined)[]) {
+  for (const v of vals) if (v && v.trim()) return v;
+  return "";
+}
+
+const POST_QUERY = `
+*[_type == "post" && slug.current == $slug][0]{
+  title,
+  slug,
+  publishedAt,
+  mainImage{ asset->{ url } },
+  "raw": @
+}
+`;
 
 export async function generateMetadata({ params }: { params: { slug: string } }): Promise<Metadata> {
-  const post = await getPost(params.slug);
-  const desc =
-    cleanText(post?.excerpt) ||
-    cleanText(post?.hook) ||
-    cleanText(post?.reality) ||
-    undefined;
+  const post = await client.fetch<PostDoc>(POST_QUERY, { slug: params.slug });
+  const raw = post?.raw || {};
+  const imageUrl = raw?.mainImage?.asset?.url ?? post?.mainImage?.asset?.url ?? "/og-default.svg";
+  const excerpt = typeof raw?.excerpt === "string" ? raw.excerpt : undefined;
+  const descSrc = firstNonEmpty(
+    excerpt,
+    pickText(raw, ["hook", "intro", "opening"]),
+    pickText(raw, ["reality_check", "realityCheck", "problem", "pain"]),
+  );
+  const description = descSrc ? cleanText(descSrc).slice(0, 160) : undefined;
 
   return {
-    title: post?.title ?? "Post",
-    description: desc,
+    title: post?.title || "Post",
+    description,
+    openGraph: {
+      title: post?.title || "Post",
+      description,
+      images: [{ url: imageUrl, width: 1200, height: 630 }],
+      type: "article",
+    },
+    twitter: { card: "summary_large_image", title: post?.title || "Post", description, images: [imageUrl] },
   };
 }
 
-// ---- page ------------------------------------------------------------------
-
 export default async function PostPage({ params }: { params: { slug: string } }) {
-  const post = await getPost(params.slug);
-
+  const post = await client.fetch<PostDoc>(POST_QUERY, { slug: params.slug });
   if (!post) {
     return (
       <main className="max-w-3xl mx-auto px-4 py-12">
         <p>Post not found.</p>
-        <Link href="/posts" className="text-blue-600 underline mt-6 inline-block">
-          ← Back to posts
-        </Link>
+        <Link href="/posts" className="text-blue-600 underline mt-6 inline-block">← Back to posts</Link>
       </main>
     );
   }
 
-  const {
-    title,
-    publishedAt,
-    imageUrl,
-    affiliateDisclosure,
-    hook,
-    reality,
-    shift,
-    playbook,
-    affiliate,
-    reflection,
-    excerpt,
-  } = post;
+  const raw = post.raw || {};
+  const imageUrl = raw?.mainImage?.asset?.url ?? post.mainImage?.asset?.url ?? "/og-default.svg";
+
+  // Gather sections robustly, then clean
+  const sections = [
+    { title: "Hook",            text: pickText(raw, ["hook", "intro", "opening"]) },
+    { title: "Reality Check",   text: pickText(raw, ["reality_check", "realityCheck", "problem", "pain"]) },
+    { title: "Shift",           text: pickText(raw, ["shift", "reframe", "idea"]) },
+    { title: "Playbook",        text: pickText(raw, ["playbook", "steps", "guide", "howto", "bullets"]) },
+    { title: "Tools Mentioned", text: pickText(raw, ["affiliate_weave", "affiliateWeave", "tools", "mentions"]) },
+    { title: "Reflection",      text: pickText(raw, ["reflection", "takeaway", "closing"]) },
+    { title: "Excerpt",         text: typeof raw?.excerpt === "string" ? raw.excerpt : undefined },
+  ]
+    .map(s => ({ ...s, text: s.text ? cleanText(s.text) : undefined }))
+    .filter(s => s.text && s.text.trim().length > 0);
+
+  const fallback = cleanText(
+    firstNonEmpty(
+      pickText(raw, ["bodyText", "body", "content"]),
+      typeof raw?.excerpt === "string" ? raw.excerpt : ""
+    )
+  );
 
   return (
     <main className="max-w-3xl mx-auto px-4 py-12">
-      <h1 className="text-3xl sm:text-4xl font-semibold tracking-tight">{title}</h1>
-      {publishedAt && (
+      <h1 className="text-3xl sm:text-4xl font-semibold tracking-tight">{post.title}</h1>
+      {post.publishedAt && (
         <p className="text-sm text-gray-500 mt-2">
-          {new Date(publishedAt).toLocaleDateString("en-AU", {
-            year: "numeric",
-            month: "short",
-            day: "numeric",
-          })}
+          {new Date(post.publishedAt).toLocaleDateString("en-AU", { year: "numeric", month: "short", day: "numeric" })}
         </p>
       )}
 
-      {imageUrl && (
-        <div className="mt-6">
-          <Image
-            src={imageUrl}
-            alt={title}
-            width={1200}
-            height={630}
-            className="w-full h-auto rounded-xl border"
-            priority
-          />
-        </div>
-      )}
-
-      {affiliateDisclosure && (
-        <p className="text-sm text-gray-500 mt-6">
-          {cleanText(affiliateDisclosure)}
-        </p>
-      )}
+      <div className="mt-6">
+        <Image
+          src={imageUrl}
+          alt={post.title}
+          width={1200}
+          height={630}
+          className="w-full h-auto rounded-xl border"
+          priority
+        />
+      </div>
 
       <article className="prose prose-neutral max-w-none mt-8 space-y-8">
-        {renderSection("hook", hook)}
-        {renderSection("reality", reality)}
-        {renderSection("shift", shift)}
-        {renderSection("playbook", playbook)}
-        {renderSection("affiliate", affiliate)}
-        {renderSection("reflection", reflection)}
-        {renderSection("excerpt", excerpt)}
+        {sections.length > 0 ? (
+          sections.map((s, i) => {
+            const paras = s.text!.split(/\n\s*\n/);
+            return (
+              <section key={i} className="space-y-4">
+                <h2 className="text-xl font-semibold">{s.title}</h2>
+                {paras.map((p, idx) => (
+                  <p key={idx} className="leading-7">{p}</p>
+                ))}
+              </section>
+            );
+          })
+        ) : (
+          <section className="space-y-4">
+            {fallback ? (
+              fallback.split(/\n\s*\n/).map((p, i) => <p key={i} className="leading-7">{p}</p>)
+            ) : (
+              <p>No content available for this post yet.</p>
+            )}
+          </section>
+        )}
       </article>
 
-      <Link href="/posts" className="text-blue-600 underline mt-10 inline-block">
-        ← Back to posts
-      </Link>
+      <Link href="/posts" className="text-blue-600 underline mt-10 inline-block">← Back to posts</Link>
     </main>
   );
 }
