@@ -12,22 +12,22 @@ function cleanText(input?: string): string {
   if (!input) return "";
   let s = input;
 
-  // Remove common prompt labels at start of a line
-  s = s.replace(/^(hook|reality\s*check|shift|playbook|reflection|cta)\s*:\s*/gim, "");
+  // Remove common prompt/section labels at start of a line
+  s = s.replace(/^(hook|reality\s*check|shift|playbook|reflection|cta|tools\s*mentioned)\s*:\s*/gim, "");
 
-  // Remove markdown headings like ### and ####
+  // Markdown headings like ### and ####
   s = s.replace(/^\s*#{1,6}\s*/gm, "");
 
-  // Remove numbered list prefixes like "1. ", "2. "
+  // Numbered list prefixes like "1. ", "2. "
   s = s.replace(/^\s*\d+\.\s+/gm, "");
 
-  // Remove bullet prefixes
+  // Bullet prefixes
   s = s.replace(/^\s*[-*•]\s+/gm, "");
 
-  // Remove code fences
+  // Code fences
   s = s.replace(/```[\s\S]*?```/g, "");
 
-  // Remove bold/italics/code markers (keep inner text)
+  // Bold/italics/code markers
   s = s.replace(/\*\*(.*?)\*\*/g, "$1");
   s = s.replace(/\*(.*?)\*/g, "$1");
   s = s.replace(/_(.*?)_/g, "$1");
@@ -67,32 +67,41 @@ type Post = {
   imageUrl?: string;
   affiliateDisclosure?: string;
 
-  // string sections (generator output)
   hook?: string;
-  realityCheck?: string;
+  reality?: string;      // unified alias for reality_check / realityCheck
   shift?: string;
   playbook?: string;
-  affiliateWeave?: string;
+  affiliate?: string;    // unified alias for affiliate_weave / affiliateWeave
   reflection?: string;
   excerpt?: string;
 };
 
 async function getPost(slug: string): Promise<Post | null> {
+  // Use GROQ aliases + coalesce to unify snake_case, camelCase, and nested variants
   const query = `
     *[_type=="post" && slug.current==$slug][0]{
       _id,
       title,
       "slug": slug.current,
       publishedAt,
-      "imageUrl": mainImage.asset->url,
+
+      // hero image (any common key)
+      "imageUrl": coalesce(mainImage.asset->url, main_image.asset->url),
+
       affiliateDisclosure,
-      hook,
-      realityCheck,
-      shift,
-      playbook,
-      affiliateWeave,
-      reflection,
-      excerpt
+
+      // unified sections
+      "hook": coalesce(hook, sections.hook, content.hook, data.hook, intro, opening),
+      "reality": coalesce(reality_check, realityCheck, sections.reality_check, sections.realityCheck, content.reality_check, content.realityCheck, problem, pain),
+      "shift": coalesce(shift, sections.shift, content.shift, idea, reframe),
+
+      "playbook": coalesce(playbook, sections.playbook, content.playbook, steps, guide, howto, bullets),
+
+      "affiliate": coalesce(affiliate_weave, affiliateWeave, sections.affiliate_weave, sections.affiliateWeave, tools, mentions),
+
+      "reflection": coalesce(reflection, sections.reflection, content.reflection, takeaway, closing),
+
+      "excerpt": coalesce(excerpt, summary)
     }
   `;
   return client.fetch(query, { slug });
@@ -103,7 +112,7 @@ export async function generateMetadata({ params }: { params: { slug: string } })
   const desc =
     cleanText(post?.excerpt) ||
     cleanText(post?.hook) ||
-    cleanText(post?.realityCheck) ||
+    cleanText(post?.reality) ||
     undefined;
 
   return {
@@ -134,10 +143,10 @@ export default async function PostPage({ params }: { params: { slug: string } })
     imageUrl,
     affiliateDisclosure,
     hook,
-    realityCheck,
+    reality,
     shift,
     playbook,
-    affiliateWeave,
+    affiliate,
     reflection,
     excerpt,
   } = post;
@@ -176,10 +185,10 @@ export default async function PostPage({ params }: { params: { slug: string } })
 
       <article className="prose prose-neutral max-w-none mt-8 space-y-8">
         {renderSection("hook", hook)}
-        {renderSection("realityCheck", realityCheck)}
+        {renderSection("reality", reality)}
         {renderSection("shift", shift)}
         {renderSection("playbook", playbook)}
-        {renderSection("affiliateWeave", affiliateWeave)}
+        {renderSection("affiliate", affiliate)}
         {renderSection("reflection", reflection)}
         {renderSection("excerpt", excerpt)}
       </article>
