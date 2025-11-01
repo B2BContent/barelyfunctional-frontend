@@ -13,6 +13,13 @@ type SanityImageRef = {
   asset?: { _type: "reference"; _ref: string };
 };
 
+type Span = { _type: "span"; text: string; marks?: string[] };
+type Block = {
+  _type: "block";
+  style?: string;
+  listItem?: string;
+  children?: Span[];
+};
 type PostDoc = {
   _id: string;
   title: string;
@@ -24,10 +31,9 @@ type PostDoc = {
   content?: any[]; // Portable Text array
 };
 
-// Simple Sanity image ref -> CDN url helper
+// basic Sanity image URL
 function refToSanityImageUrl(ref?: string | null) {
   if (!ref) return null;
-  // image-<assetId>-<dims>-<format>
   const parts = ref.split("-");
   if (parts.length < 4) return null;
   const [, id, dims, fmtWithMaybeExt] = parts;
@@ -54,6 +60,74 @@ async function getPost(slug: string): Promise<PostDoc | null> {
   return client.fetch(query, { slug });
 }
 
+/** String scrubbing */
+function cleanString(input: string): string {
+  let s = input ?? "";
+
+  // nuke obvious fillers at the start of a paragraph
+  s = s.replace(/^\s*(sure thing!|let[’']s break it down:|here[’']s the deal:|the bottom line:)\s*/i, "");
+
+  // strip markdown markers (keep text)
+  s = s.replace(/\*\*(.*?)\*\*/g, "$1");
+  s = s.replace(/\*(.*?)\*/g, "$1");
+  s = s.replace(/_(.*?)_/g, "$1");
+  s = s.replace(/`{1,3}([^`]+?)`{1,3}/g, "$1");
+
+  // remove code fences entirely
+  s = s.replace(/```[\s\S]*?```/g, "");
+
+  // strip heading prefixes and numbered list prefixes at the start
+  s = s.replace(/^\s*#{1,6}\s*/g, "");
+  s = s.replace(/^\s*\d+\.\s+/g, "");
+
+  // collapse whitespace
+  s = s.replace(/[ \t]+$/gm, "");
+  s = s.replace(/\n{3,}/g, "\n\n");
+  return s.trim();
+}
+
+/** Clean Portable Text blocks (render-time only; no DB changes) */
+function sanitizePortableText(value: any[] = []): any[] {
+  return value
+    .map((node) => {
+      if (node?._type !== "block") return node;
+
+      const b = { ...node } as Block;
+
+      // Flatten lists into paragraphs
+      if (b.listItem) {
+        delete b.listItem;
+        b.style = "normal";
+      }
+
+      // De-headline: turn h2/h3/etc to normal para
+      if (b.style && /^h[1-6]$/.test(b.style)) {
+        b.style = "normal";
+      }
+
+      // Clean each span's text
+      if (Array.isArray(b.children)) {
+        b.children = b.children.map((ch) =>
+          ch && ch._type === "span"
+            ? { ...ch, text: cleanString(ch.text || "") }
+            : ch
+        );
+      }
+
+      // If after cleaning the paragraph is empty, drop it
+      const joined = (b.children || [])
+        .filter((c: any) => c?._type === "span")
+        .map((c: any) => c.text || "")
+        .join("")
+        .trim();
+
+      if (joined.length === 0) return null;
+
+      return b;
+    })
+    .filter(Boolean);
+}
+
 export async function generateMetadata(
   { params }: { params: { slug: string } }
 ): Promise<Metadata> {
@@ -70,6 +144,7 @@ export default async function PostPage({ params }: { params: { slug: string } })
   if (!post) return notFound();
 
   const heroUrl = refToSanityImageUrl(post.heroImage?.asset?._ref);
+  const cleanedContent = sanitizePortableText(post.content);
 
   return (
     <article className="max-w-3xl mx-auto px-4 py-10">
@@ -100,33 +175,10 @@ export default async function PostPage({ params }: { params: { slug: string } })
         </section>
       )}
 
-      {/* The body content (Portable Text) */}
-      {Array.isArray(post.content) && post.content.length > 0 && (
+      {/* Render the cleaned blocks */}
+      {Array.isArray(cleanedContent) && cleanedContent.length > 0 && (
         <div className="prose prose-neutral max-w-none mt-8">
-          <PortableText
-            value={post.content}
-            components={{
-              block: {
-                h2: ({ children }) => <h2 className="mt-8">{children}</h2>,
-                h3: ({ children }) => <h3 className="mt-6">{children}</h3>,
-                normal: ({ children }) => <p className="leading-7">{children}</p>,
-              },
-              list: {
-                bullet: ({ children }) => <ul className="list-disc ml-6">{children}</ul>,
-                number: ({ children }) => <ol className="list-decimal ml-6">{children}</ol>,
-              },
-              marks: {
-                link: ({ children, value }) => {
-                  const href = (value?.href as string) || "#";
-                  return (
-                    <a className="text-blue-600 underline" href={href} target="_blank" rel="noreferrer">
-                      {children}
-                    </a>
-                  );
-                },
-              },
-            }}
-          />
+          <PortableText value={cleanedContent} />
         </div>
       )}
 
