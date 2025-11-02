@@ -2,14 +2,14 @@ name: Daily Content Cron
 
 on:
   schedule:
-    - cron: "5 21 * * *"  # ~08:05 Australia/Melbourne
+    - cron: "5 21 * * *"  # ~08:05 Australia/Melbourne (AEDT)
   workflow_dispatch:
 
 jobs:
   run-daily:
     runs-on: ubuntu-latest
     env:
-      # If your app lives in a subfolder, set it here (e.g. bf_next_sanity_starter)
+      # If your app lives in a subfolder, set it here (e.g., bf_next_sanity_starter)
       WORKDIR: "."
 
     steps:
@@ -41,9 +41,19 @@ jobs:
           test -f scripts/revalidate_all.mjs && echo "✅ revalidate_all.mjs found" || (echo "❌ missing revalidate_all.mjs" && exit 1)
 
       - name: Debug — check secrets presence (no values shown)
+        env:
+          OPENAI_API_KEY:          ${{ secrets.OPENAI_API_KEY }}
+          SANITY_PROJECT_ID:       ${{ secrets.SANITY_PROJECT_ID }}
+          SANITY_DATASET:          ${{ secrets.SANITY_DATASET }}
+          SANITY_WRITE_TOKEN:      ${{ secrets.SANITY_WRITE_TOKEN }}
+          SANITY_API_READ_TOKEN:   ${{ secrets.SANITY_API_READ_TOKEN }}
+          REVALIDATE_SECRET:       ${{ secrets.REVALIDATE_SECRET }}
         run: |
+          set +e
+          MISSING=
           for k in OPENAI_API_KEY SANITY_PROJECT_ID SANITY_DATASET SANITY_WRITE_TOKEN SANITY_API_READ_TOKEN REVALIDATE_SECRET; do
-            if [ -z "${{ secrets[format('{0}', k)] }}" ]; then
+            v="${!k}"
+            if [ -z "$v" ]; then
               echo "❌ Missing secret: $k"
               MISSING=1
             else
@@ -58,31 +68,38 @@ jobs:
 
       - name: Generate & publish 7 posts
         working-directory: ${{ env.WORKDIR }}
-        run: npm run cron:run
+        run: |
+          if npm run | grep -qE '^\s*cron:run'; then
+            npm run cron:run
+          else
+            echo "ℹ️ cron:run not found — using gen:daily && publish:dir"
+            npm run gen:daily
+            npm run publish:dir
+          fi
         env:
-          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
-          SANITY_PROJECT_ID: ${{ secrets.SANITY_PROJECT_ID }}
-          SANITY_DATASET: ${{ secrets.SANITY_DATASET }}
-          SANITY_WRITE_TOKEN: ${{ secrets.SANITY_WRITE_TOKEN }}
+          OPENAI_API_KEY:        ${{ secrets.OPENAI_API_KEY }}
+          SANITY_PROJECT_ID:     ${{ secrets.SANITY_PROJECT_ID }}
+          SANITY_DATASET:        ${{ secrets.SANITY_DATASET }}
+          SANITY_WRITE_TOKEN:    ${{ secrets.SANITY_WRITE_TOKEN }}
           SANITY_API_READ_TOKEN: ${{ secrets.SANITY_API_READ_TOKEN }}
-          SITE_URL: ${{ secrets.SITE_URL }}
+          SITE_URL:              ${{ secrets.SITE_URL }}
 
       - name: Clean Sanity content (idempotent)
         working-directory: ${{ env.WORKDIR }}
         run: node scripts/migrate_clean_pt_blocks.mjs --apply
         env:
-          SANITY_PROJECT_ID: ${{ secrets.SANITY_PROJECT_ID }}
-          SANITY_DATASET: ${{ secrets.SANITY_DATASET }}
-          SANITY_WRITE_TOKEN: ${{ secrets.SANITY_WRITE_TOKEN }}
-          SANITY_API_VERSION: "2025-02-19"
+          SANITY_PROJECT_ID:     ${{ secrets.SANITY_PROJECT_ID }}
+          SANITY_DATASET:        ${{ secrets.SANITY_DATASET }}
+          SANITY_WRITE_TOKEN:    ${{ secrets.SANITY_WRITE_TOKEN }}
+          SANITY_API_VERSION:    "2025-02-19"
 
       - name: Revalidate all posts
         working-directory: ${{ env.WORKDIR }}
         run: node scripts/revalidate_all.mjs
         env:
-          SANITY_PROJECT_ID: ${{ secrets.SANITY_PROJECT_ID }}
-          SANITY_DATASET: ${{ secrets.SANITY_DATASET }}
-          SANITY_READ_TOKEN: ${{ secrets.SANITY_API_READ_TOKEN }}
-          SANITY_API_VERSION: "2025-02-19"
-          REVALIDATE_URL: "https://barelyfunctionalco.com/api/revalidate"
-          REVALIDATE_SECRET: ${{ secrets.REVALIDATE_SECRET }}
+          SANITY_PROJECT_ID:     ${{ secrets.SANITY_PROJECT_ID }}
+          SANITY_DATASET:        ${{ secrets.SANITY_DATASET }}
+          SANITY_READ_TOKEN:     ${{ secrets.SANITY_API_READ_TOKEN }}
+          SANITY_API_VERSION:    "2025-02-19"
+          REVALIDATE_URL:        "https://barelyfunctionalco.com/api/revalidate"
+          REVALIDATE_SECRET:     ${{ secrets.REVALIDATE_SECRET }}
