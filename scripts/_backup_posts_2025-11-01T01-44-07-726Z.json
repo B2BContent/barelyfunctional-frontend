@@ -1,0 +1,265 @@
+[
+  {
+    "_id": "AibvqEWFNR3H8s1iUZM1uu",
+    "affiliateWeave": null,
+    "body": null,
+    "excerpt": "Unleash your inner mogul with savvy email tactics and the right tools to streamline your business operations.",
+    "hook": null,
+    "playbook": null,
+    "realityCheck": null,
+    "reflection": null,
+    "shift": null,
+    "slug": "master-your-email-game-tech-tips-for-barely-functional-bosses",
+    "title": "Master Your Email Game: Tech Tips for Barely Functional Bosses"
+  },
+  {
+    "_id": "AibvqEWFNR3H8s1iUZM2KO",
+    "affiliateWeave": null,
+    "body": null,
+    "excerpt": "Unlock the secret to effortless video creation with AI tools. Get ready to let your AI intern do the heavy lifting.",
+    "hook": null,
+    "playbook": null,
+    "realityCheck": null,
+    "reflection": null,
+    "shift": null,
+    "slug": "how-ai-video-tools-can-make-you-look-like-a-pro-with-minimal-effort",
+    "title": "How AI Video Tools Can Make You Look Like a Pro (With Minimal Effort!)"
+  },
+  {
+    "_id": "AibvqEWFNR3H8s1iUZM3ES",
+    "affiliateWeave": null,
+    "body": null,
+    "excerpt": "Explore practical tips for launching your e-commerce side hustle without the smoke and mirrors. No get-rich-quick schemes here, just solid advice.",
+    "hook": null,
+    "playbook": null,
+    "realityCheck": null,
+    "reflection": null,
+    "shift": null,
+    "slug": "e-commerce-side-hustles-your-guide-to-hustling-the-right-way",
+    "title": "E-Commerce & Side Hustles: Your Guide to Hustling the Right Way"
+  },
+  {
+    "_id": "Uc65FxtCRWqrWsK5uUzhzH",
+    "affiliateWeave": null,
+    "body": null,
+    "excerpt": "Practical insights for getting things done.",
+    "hook": null,
+    "playbook": null,
+    "realityCheck": null,
+    "reflection": null,
+    "shift": null,
+    "slug": "notes-on-ai-video-tools",
+    "title": "Notes on AI & Video Tools"
+  },
+  {
+    "_id": "Uc65FxtCRWqrWsK5uUzjUp",
+    "affiliateWeave": null,
+    "body": null,
+    "excerpt": "Practical insights for getting things done.",
+    "hook": null,
+    "playbook": null,
+    "realityCheck": null,
+    "reflection": null,
+    "shift": null,
+    "slug": "notes-on-fintech-freelance",
+    "title": "Notes on Fintech & Freelance"
+  },
+  {
+    "_id": "Uc65FxtCRWqrWsK5uV0ce1",
+    "affiliateWeave": null,
+    "body": null,
+    "excerpt": "Practical insights for getting things done.",
+    "hook": null,
+    "playbook": null,
+    "realityCheck": null,
+    "reflection": null,
+    "shift": null,
+    "slug": "notes-on-lifestyle-sanity",
+    "title": "Notes on Lifestyle & Sanity"
+  },
+  {
+    "_id": "c7eca5df-bca0-4d43-b621-3744dfe897b2",
+    "affiliateWeave": null,
+    "body": [
+      {
+        "_key": "d9656d420297",
+        "_type": "block",
+        "children": [
+          {
+            "_key": "458b2d00260d",
+            "_type": "span",
+            "marks": [],
+            "text": "A short paragraph of your post content."
+          }
+        ],
+        "markDefs": [],
+        "style": "normal"
+      },
+      {
+        "_key": "c9325bdf3ca6",
+        "_type": "block",
+        "children": [
+          {
+            "_key": "e36347431922",
+            "_type": "span",
+            "marks": [],
+            "text": ""
+          }
+        ],
+        "markDefs": [],
+        "style": "normal"
+      }
+    ],
+    "excerpt": "A brief reflection on doing things backwards—but making it work anyway.",
+    "hook": null,
+    "playbook": null,
+    "realityCheck": null,
+    "reflection": null,
+    "shift": null,
+    "slug": "we-built-a-website-before-doing-the-work-iconic",
+    "title": "We Built a Website Before Doing the Work (Iconic)"
+  },
+  {
+    "_id": "df9c0dcd-dbdf-4c6e-99d0-2209a96534f2",
+    "affiliateWeave": null,
+    "body": null,
+    "excerpt": "“This is a test post to verify images work.”",
+    "hook": null,
+    "playbook": null,
+    "realityCheck": null,
+    "reflection": null,
+    "shift": null,
+    "slug": "test-featured-image",
+    "title": "Test Featured Image"
+  },
+  {
+    "_id": "f1eb3d1c-cba3-4211-be89-b97e806febc8",
+    "affiliateWeave": null,
+    "body": null,
+    "excerpt": null,
+    "hook": null,
+    "playbook": null,
+    "realityCheck": null,
+    "reflection": null,
+    "shift": null,
+    "slug": "image-test-post",
+    "title": "Image Test Post"
+  },
+  {
+    "_id": "xKGJHcTYRu5RhRlV70AErM",
+    "affiliateWeave": null,
+    "body": null,
+    "excerpt": "Five tiny systems to keep your day afloat—even when your willpower clocks off.",
+    "hook": null,
+    "playbook": null,
+    "realityCheck": null,
+    "reflection": null,
+    "shift": null,
+    "slug": "how-to-be-productive-without-crying-much",
+    "title": "How to Be Productive Without Crying (Much)"
+  },
+  {
+    "_id": "xKGJHcTYRu5RhRlV70Bp8U",
+    "affiliateWeave": null,
+    "body": null,
+    "excerpt": "A sober look at what AI can actually do for your workflow—without the hype or the dread.",
+    "hook": null,
+    "playbook": null,
+    "realityCheck": null,
+    "reflection": null,
+    "shift": null,
+    "slug": "five-ai-tools-that-wont-replace-you-yet",
+    "title": "Five AI Tools That Won't Replace You (Yet)"
+  },
+  {
+    "_id": "xKGJHcTYRu5RhRlV70KNvV",
+    "affiliateWeave": null,
+    "body": null,
+    "excerpt": "Unlock your potential with tiny systems that boost productivity and growth without breaking a sweat.",
+    "hook": null,
+    "playbook": null,
+    "realityCheck": null,
+    "reflection": null,
+    "shift": null,
+    "slug": "tiny-systems-the-secret-weapon-for-productivity-and-growth",
+    "title": "Tiny Systems: The Secret Weapon for Productivity and Growth"
+  },
+  {
+    "_id": "xKGJHcTYRu5RhRlV70KOLj",
+    "affiliateWeave": null,
+    "body": null,
+    "excerpt": "Discover the benefits of continuous education and how to make the most of your learning journey.",
+    "hook": null,
+    "playbook": null,
+    "realityCheck": null,
+    "reflection": null,
+    "shift": null,
+    "slug": "unlock-your-potential-the-joy-of-lifelong-learning",
+    "title": "Unlock Your Potential: The Joy of Lifelong Learning"
+  },
+  {
+    "_id": "xKGJHcTYRu5RhRlV70KOuh",
+    "affiliateWeave": null,
+    "body": null,
+    "excerpt": "Discover simple ways to set boundaries and reclaim your sanity in today’s hectic lifestyle.",
+    "hook": null,
+    "playbook": null,
+    "realityCheck": null,
+    "reflection": null,
+    "shift": null,
+    "slug": "finding-balance-how-to-keep-your-sanity-in-a-chaotic-world",
+    "title": "Finding Balance: How to Keep Your Sanity in a Chaotic World"
+  },
+  {
+    "_id": "xKGJHcTYRu5RhRlV7CDrUZ",
+    "affiliateWeave": null,
+    "body": null,
+    "excerpt": "Practical insights for getting things done.",
+    "hook": null,
+    "playbook": null,
+    "realityCheck": null,
+    "reflection": null,
+    "shift": null,
+    "slug": "notes-on-productivity-growth",
+    "title": "Notes on Productivity & Growth"
+  },
+  {
+    "_id": "xKGJHcTYRu5RhRlV7CDrqQ",
+    "affiliateWeave": null,
+    "body": null,
+    "excerpt": "Practical insights for getting things done.",
+    "hook": null,
+    "playbook": null,
+    "realityCheck": null,
+    "reflection": null,
+    "shift": null,
+    "slug": "notes-on-business-tech",
+    "title": "Notes on Business & Tech"
+  },
+  {
+    "_id": "xKGJHcTYRu5RhRlV7CDsY8",
+    "affiliateWeave": null,
+    "body": null,
+    "excerpt": "Practical insights for getting things done.",
+    "hook": null,
+    "playbook": null,
+    "realityCheck": null,
+    "reflection": null,
+    "shift": null,
+    "slug": "notes-on-knowledge-education",
+    "title": "Notes on Knowledge & Education"
+  },
+  {
+    "_id": "xKGJHcTYRu5RhRlV7CDuF2",
+    "affiliateWeave": null,
+    "body": null,
+    "excerpt": "Practical insights for getting things done.",
+    "hook": null,
+    "playbook": null,
+    "realityCheck": null,
+    "reflection": null,
+    "shift": null,
+    "slug": "notes-on-e-commerce-side-hustles",
+    "title": "Notes on E-Commerce & Side Hustles"
+  }
+]

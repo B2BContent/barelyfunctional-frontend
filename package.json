@@ -16,7 +16,7 @@
   },
   "dependencies": {
     "@portabletext/react": "^4.0.3",
-    "@sanity/client": "^6.18.2",
+    "@sanity/client": "^6.29.1",
     "@sanity/image-url": "^1.2.0",
     "csv-parse": "^6.1.0",
     "dayjs": "^1.11.18",
