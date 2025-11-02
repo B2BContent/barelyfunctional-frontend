@@ -2,27 +2,62 @@ name: Daily Content Cron
 
 on:
   schedule:
-    # 08:05 Australia/Melbourne (AEDT = UTC+11) ≈ 21:05 UTC previous day
-    - cron: "5 21 * * *"
+    - cron: "5 21 * * *"  # ~08:05 Australia/Melbourne
   workflow_dispatch:
 
 jobs:
   run-daily:
     runs-on: ubuntu-latest
+    env:
+      # If your app lives in a subfolder, set it here (e.g. bf_next_sanity_starter)
+      WORKDIR: "."
 
     steps:
       - name: Check out repo
         uses: actions/checkout@v4
 
+      - name: Debug — print repo tree
+        run: |
+          echo "PWD:" && pwd
+          echo "--- repo root ---" && ls -la
+          echo "--- $WORKDIR ---" && ls -la "$WORKDIR" || true
+          echo "--- $WORKDIR/scripts ---" && ls -la "$WORKDIR/scripts" || true
+
       - name: Use Node 18
         uses: actions/setup-node@v4
         with:
           node-version: "18"
+          cache: "npm"
+          cache-dependency-path: ${{ env.WORKDIR }}/package-lock.json
 
-      - name: Install (legacy peer deps to avoid sanity conflicts)
+      - name: Debug — show package.json scripts
+        working-directory: ${{ env.WORKDIR }}
+        run: node -e "console.log(require('./package.json').scripts)"
+
+      - name: Debug — verify helper scripts exist
+        working-directory: ${{ env.WORKDIR }}
+        run: |
+          test -f scripts/migrate_clean_pt_blocks.mjs && echo "✅ migrate_clean_pt_blocks.mjs found" || (echo "❌ missing migrate_clean_pt_blocks.mjs" && exit 1)
+          test -f scripts/revalidate_all.mjs && echo "✅ revalidate_all.mjs found" || (echo "❌ missing revalidate_all.mjs" && exit 1)
+
+      - name: Debug — check secrets presence (no values shown)
+        run: |
+          for k in OPENAI_API_KEY SANITY_PROJECT_ID SANITY_DATASET SANITY_WRITE_TOKEN SANITY_API_READ_TOKEN REVALIDATE_SECRET; do
+            if [ -z "${{ secrets[format('{0}', k)] }}" ]; then
+              echo "❌ Missing secret: $k"
+              MISSING=1
+            else
+              echo "✅ Found secret: $k"
+            fi
+          done
+          [ -z "$MISSING" ] || (echo "Some secrets are missing — aborting"; exit 1)
+
+      - name: Install deps
+        working-directory: ${{ env.WORKDIR }}
         run: npm ci --legacy-peer-deps
 
       - name: Generate & publish 7 posts
+        working-directory: ${{ env.WORKDIR }}
         run: npm run cron:run
         env:
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
@@ -32,7 +67,8 @@ jobs:
           SANITY_API_READ_TOKEN: ${{ secrets.SANITY_API_READ_TOKEN }}
           SITE_URL: ${{ secrets.SITE_URL }}
 
-      - name: Clean any AI/markdown artifacts in Sanity (idempotent)
+      - name: Clean Sanity content (idempotent)
+        working-directory: ${{ env.WORKDIR }}
         run: node scripts/migrate_clean_pt_blocks.mjs --apply
         env:
           SANITY_PROJECT_ID: ${{ secrets.SANITY_PROJECT_ID }}
@@ -40,7 +76,8 @@ jobs:
           SANITY_WRITE_TOKEN: ${{ secrets.SANITY_WRITE_TOKEN }}
           SANITY_API_VERSION: "2025-02-19"
 
-      - name: Revalidate all posts on site
+      - name: Revalidate all posts
+        working-directory: ${{ env.WORKDIR }}
         run: node scripts/revalidate_all.mjs
         env:
           SANITY_PROJECT_ID: ${{ secrets.SANITY_PROJECT_ID }}
